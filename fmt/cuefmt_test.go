@@ -17,4 +17,13 @@ func TestCompactCueVal(t *testing.T) {
 	}`)
 
 	assert.Equal(t, `{·msg: "Hello world!"·bye: "And thanks for all the fish!"·}`, fmt.CompactCueVal(cueval))
+
+	cueval = ctx.CompileString(`
+str: "hello world"
+num: 42
+flt: 3.14
+"k8s.io/annotation": "secure-me"
+`)
+
+	assert.Equal(t, `{·str: "hello world"·num: 42·flt: 3.14·"k8s.io/annotation": "secure-me"·}`, fmt.CompactCueVal(cueval))
 }

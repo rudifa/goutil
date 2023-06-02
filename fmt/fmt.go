@@ -1,25 +1,40 @@
 // custom formatting
 package fmt
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+)
 
-// CompactFmt formats a string,
-// replacing newline characters with middle dot (·)
-// and skipping tab characters
+// CompactFmt formats a string, reducing the whitespace to a minimum
+// (1) replaces every newline character by a middle dot;
+// (2) replaces any adjacent spaces or tabs following the replaced newline by nothing,
+// (3) replaces any other adjacent adjacent spaces or tabs by a single space
 func CompactFmt(formatString string) string {
-	result := strings.Builder{}
+	replacer := strings.NewReplacer("\n", "·")
 
-	for _, c := range formatString {
-		switch c {
-		case '\n', '\u0085', '\u2028', '\u2029':
-			result.WriteRune('·')
-		case '\t':
-			// Skip tab characters
-			continue
-		default:
-			result.WriteRune(c)
-		}
+	result := replacer.Replace(formatString)
+
+	re := regexp.MustCompile(`"[^"]*"`)
+	matches := re.FindAllStringIndex(result, -1)
+
+	for i := len(matches) - 1; i >= 0; i-- {
+		start, end := matches[i][0], matches[i][1]
+		substr := result[start:end]
+
+		replaceNewline := strings.ReplaceAll(substr, "\n", "·")
+		result = result[:start] + replaceNewline + result[end:]
 	}
 
-	return result.String()
+	re = regexp.MustCompile(`[ \t]+`)
+	result = re.ReplaceAllStringFunc(result, func(match string) string {
+		if strings.Contains(match, "\n") {
+			return strings.ReplaceAll(match, "\n", "")
+		}
+		return " "
+	})
+
+	result = strings.ReplaceAll(result, "· ", "·")
+
+	return result
 }
