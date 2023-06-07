@@ -1,5 +1,5 @@
 // custom formatting
-package fmt
+package ffmt
 
 import (
 	"regexp"
