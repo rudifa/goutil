@@ -75,3 +75,17 @@ func RemoveDirectoryIfExists(directoryPath string) error {
 	}
 	return os.RemoveAll(directoryPath)
 }
+
+func WriteToFile(filename string, content string) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(content)
+	if err != nil {
+		return err
+	}
+	return nil
+}
