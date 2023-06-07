@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	"cuelang.org/go/cue/cuecontext"
-	"github.com/rudifa/goutil/fmt"
+
+	"github.com/rudifa/goutil/pkg/ffmt"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +17,8 @@ func TestCompactCueVal(t *testing.T) {
 		"bye": "And thanks for all the fish!"
 	}`)
 
-	assert.Equal(t, `{·msg: "Hello world!"·bye: "And thanks for all the fish!"·}`, fmt.CompactCueVal(cueval))
+	assert.Equal(t, `{·msg: "Hello world!"·bye: "And thanks for all the fish!"·}`,
+		ffmt.CompactCueVal(cueval))
 
 	cueval = ctx.CompileString(`
 str: "hello world"
@@ -25,5 +27,6 @@ flt: 3.14
 "k8s.io/annotation": "secure-me"
 `)
 
-	assert.Equal(t, `{·str: "hello world"·num: 42·flt: 3.14·"k8s.io/annotation": "secure-me"·}`, fmt.CompactCueVal(cueval))
+	assert.Equal(t, `{·str: "hello world"·num: 42·flt: 3.14·"k8s.io/annotation": "secure-me"·}`,
+		ffmt.CompactCueVal(cueval))
 }
