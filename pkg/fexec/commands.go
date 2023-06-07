@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-// RunCommand  executes a command and returns stdout, stderr, and error
+// RunCommand executes a command and returns stdout, stderr, and error
 func RunCommand(name string, args ...string) (string, string, error) {
 
 	cmd := exec.Command(name, args...)
