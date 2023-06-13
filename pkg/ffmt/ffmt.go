@@ -1,4 +1,4 @@
-// custom formatting
+// Package ffmt provides a function to format a string, reducing the whitespace to a minimum
 package ffmt
 
 import (

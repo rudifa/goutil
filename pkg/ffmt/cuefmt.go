@@ -1,3 +1,4 @@
+// Package ffmt provides functions for formatting Cue values.
 package ffmt
 
 import (
