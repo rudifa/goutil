@@ -1,3 +1,4 @@
+// Package: ffmt_test
 package ffmt_test
 
 import (

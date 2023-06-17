@@ -1,3 +1,4 @@
+// Package fexec provides functions to execute commands of the operating system.
 package fexec
 
 import (

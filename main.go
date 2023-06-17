@@ -1,7 +1,19 @@
+// package main
+
+// import "fmt"
+
+// func main() {
+// 	fmt.Println("Here we go")
+// }
+
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
-	fmt.Println("Here we go")
+
+	fmt.Println("Here we go.")
+
 }

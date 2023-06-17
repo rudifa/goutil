@@ -1,3 +1,4 @@
+// Package files provides functions for working with files and directories.
 package files
 
 import (
@@ -5,6 +6,8 @@ import (
 	"os"
 )
 
+// FileExists returns true if the file exists, false if not,
+// or an error if it cannot be determined.
 func FileExists(path string) (bool, error) {
 	info, err := os.Stat(path)
 	if err == nil {
@@ -16,6 +19,8 @@ func FileExists(path string) (bool, error) {
 	}
 }
 
+// DirectoryExists returns true if the directory exists, false if not,
+// or an error if it cannot be determined.
 func DirectoryExists(path string) (bool, error) {
 	info, err := os.Stat(path)
 	if err == nil {
@@ -27,8 +32,8 @@ func DirectoryExists(path string) (bool, error) {
 	}
 }
 
+// CreateFileIfNotExists creates a file if it does not exist.
 func CreateFileIfNotExists(filePath string) error {
-
 	// Check if the file already exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		// Create the file
@@ -44,11 +49,12 @@ func CreateFileIfNotExists(filePath string) error {
 	return nil
 }
 
+// EnsureDirectoryExists creates a directory if it does not exist.
 func EnsureDirectoryExists(directoryPath string) error {
 	// Check if the directory already exists
 	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
 		// Create the directory
-		err := os.Mkdir(directoryPath, 0755)
+		err := os.MkdirAll(directoryPath, 0755)
 		if err != nil {
 			log.Fatal("failed to create directory:", err)
 		}
@@ -60,6 +66,7 @@ func EnsureDirectoryExists(directoryPath string) error {
 	return nil
 }
 
+// RemoveFileIfExists removes a file if it exists.
 func RemoveFileIfExists(filePath string) error {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		// File does not exist, return nil
@@ -68,6 +75,7 @@ func RemoveFileIfExists(filePath string) error {
 	return os.Remove(filePath)
 }
 
+// RemoveDirectoryIfExists removes a directory if it exists.
 func RemoveDirectoryIfExists(directoryPath string) error {
 	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
 		// Directory does not exist, return nil
@@ -76,6 +84,7 @@ func RemoveDirectoryIfExists(directoryPath string) error {
 	return os.RemoveAll(directoryPath)
 }
 
+// WriteToFile writes content to a file.
 func WriteToFile(filename string, content string) error {
 	f, err := os.Create(filename)
 	if err != nil {
