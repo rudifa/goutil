@@ -6,7 +6,7 @@ import (
 
 	"cuelang.org/go/cue/cuecontext"
 
-	"github.com/rudifa/goutil/pkg/ffmt"
+	"github.com/rudifa/goutil/ffmt"
 	"github.com/stretchr/testify/assert"
 )
 

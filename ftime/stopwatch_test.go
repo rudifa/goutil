@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rudifa/goutil/pkg/ftime"
+	"github.com/rudifa/goutil/ftime"
 )
 
 // TestStopwatch tests the Stopwatch type.

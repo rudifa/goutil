@@ -4,7 +4,7 @@ package ffmt_test
 import (
 	"testing"
 
-	"github.com/rudifa/goutil/pkg/ffmt"
+	"github.com/rudifa/goutil/ffmt"
 	"github.com/stretchr/testify/assert"
 )
 

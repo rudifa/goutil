@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/rudifa/goutil/pkg/files"
+	"github.com/rudifa/goutil/files"
 )
 
 func TestEnsureDirectoryExists(t *testing.T) {

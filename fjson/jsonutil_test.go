@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/rudifa/goutil/pkg/fjson"
+	"github.com/rudifa/goutil/fjson"
 )
 
 func TestCompactAndPrettyfmt(t *testing.T) {

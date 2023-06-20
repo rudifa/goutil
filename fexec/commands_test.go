@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/rudifa/goutil/pkg/fexec"
+	"github.com/rudifa/goutil/fexec"
 )
 
 func TestRunCommand(t *testing.T) {
