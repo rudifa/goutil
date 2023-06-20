@@ -3,7 +3,7 @@ package fstrings_test
 import (
 	"testing"
 
-	"github.com/rudifa/goutil/pkg/fstrings"
+	"github.com/rudifa/goutil/fstrings"
 )
 
 //"github.com/rudifa/goutil/pkg/fstrings"
