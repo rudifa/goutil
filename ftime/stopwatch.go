@@ -22,8 +22,11 @@ func Chrono() *Stopwatch {
 }
 
 // Start (re)starts the Stopwatch.
-func (sw *Stopwatch) Start() {
+func (sw *Stopwatch) Start(message string) {
 	sw.startTime = time.Now()
+	if message != "" {
+		sw.logger.Println(message)
+	}
 }
 
 // Lap returns the elapsed time since the Stopwatch was started.
