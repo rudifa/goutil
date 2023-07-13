@@ -176,6 +176,10 @@ func ExecuteFnAndCaptureStdoutAndStderr(fn func(string, ...string) error, cmd st
 	// Call the provided function
 	err = fn(cmd, args...)
 
+	if err != nil {
+		return "", "", err
+	}
+
 	stdout, stderr, err := fs.ReadAndRestore()
 	if err != nil {
 		return "", "", err
