@@ -85,16 +85,30 @@ func RemoveDirectoryIfExists(directoryPath string) error {
 }
 
 // WriteToFile writes content to a file.
-func WriteToFile(filename string, content string) error {
-	f, err := os.Create(filename)
+func WriteToFile(filepath, content string) error {
+	// Open the file for writing (create if not exists, truncate if exists)
+	file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer file.Close()
 
-	_, err = f.WriteString(content)
+	// Write the content to the file
+	_, err = file.WriteString(content)
 	if err != nil {
 		return err
 	}
+
 	return nil
+}
+
+func ReadFromFile(filepath string) (string, error) {
+	// Read the file contents using os.ReadFile
+	content, err := os.ReadFile(filepath)
+	if err != nil {
+		return "", err
+	}
+
+	// Convert the content to a string and return it
+	return string(content), nil
 }
