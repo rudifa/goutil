@@ -84,17 +84,16 @@ func RemoveDirectoryIfExists(directoryPath string) error {
 	return os.RemoveAll(directoryPath)
 }
 
-// WriteToFile writes content to a file.
-func WriteToFile(filepath, content string) error {
-	// Open the file for writing (create if not exists, truncate if exists)
+// WriteBytes writes bytes to a file.
+func WriteBytes(filepath string, bytes []byte) error {
+
 	file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	// Write the content to the file
-	_, err = file.WriteString(content)
+	_, err = file.Write(bytes)
 	if err != nil {
 		return err
 	}
@@ -102,13 +101,40 @@ func WriteToFile(filepath, content string) error {
 	return nil
 }
 
-func ReadFromFile(filepath string) (string, error) {
+// WriteString writes the string content to a file.
+func WriteString(filepath, content string) error {
+	return WriteToFile(filepath, content)
+}
+
+
+// WriteToFile writes the string content to a file.
+func WriteToFile(filepath, content string) error {
+	return WriteBytes(filepath, []byte(content))
+}
+
+// ReadBytes reads content from a file and returns it as a byte slice.
+func ReadBytes(filepath string) ([]byte, error) {
 	// Read the file contents using os.ReadFile
 	content, err := os.ReadFile(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the content
+	return content, nil
+}
+
+// ReadString reads content from a file and returns it as a string.
+func ReadString(filepath string) (string, error) {
+	bytes, err := ReadBytes(filepath)
 	if err != nil {
 		return "", err
 	}
 
-	// Convert the content to a string and return it
-	return string(content), nil
+	return string(bytes), nil
+}
+
+// ReadFromFile reads content from a file and returns it as a string.
+func ReadFromFile(filepath string) (string, error) {
+	return ReadString(filepath)
 }
