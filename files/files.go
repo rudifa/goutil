@@ -106,7 +106,6 @@ func WriteString(filepath, content string) error {
 	return WriteToFile(filepath, content)
 }
 
-
 // WriteToFile writes the string content to a file.
 func WriteToFile(filepath, content string) error {
 	return WriteBytes(filepath, []byte(content))
