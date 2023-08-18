@@ -1,6 +1,7 @@
 package fstrings
 
 import (
+	"regexp"
 	"unicode/utf8"
 )
 
@@ -34,4 +35,13 @@ func HeadAndTail(str string, n int) string {
 	result := string(headRunes) + "···" + string(tailRunes)
 
 	return result
+}
+
+// InsertBeforeExtension inserts a string before the extension of a filename
+func InsertBeforeExtension(input, insert string) string {
+	regexPattern := `(\.\w+)$`
+	re := regexp.MustCompile(regexPattern)
+
+	return re.ReplaceAllString(input, "."+insert+"$1")
+
 }
