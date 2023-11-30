@@ -2,8 +2,11 @@
 package files
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"os"
+	"strings"
 )
 
 // FileExists returns true if the file exists, false if not,
@@ -12,19 +15,6 @@ func FileExists(path string) (bool, error) {
 	info, err := os.Stat(path)
 	if err == nil {
 		return !info.IsDir(), nil
-	} else if os.IsNotExist(err) {
-		return false, nil
-	} else {
-		return false, err
-	}
-}
-
-// DirectoryExists returns true if the directory exists, false if not,
-// or an error if it cannot be determined.
-func DirectoryExists(path string) (bool, error) {
-	info, err := os.Stat(path)
-	if err == nil {
-		return info.IsDir(), nil
 	} else if os.IsNotExist(err) {
 		return false, nil
 	} else {
@@ -49,23 +39,6 @@ func CreateFileIfNotExists(filePath string) error {
 	return nil
 }
 
-// EnsureDirectoryExists creates a directory if it does not exist.
-func EnsureDirectoryExists(directoryPath string) error {
-	// Check if the directory already exists
-	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
-		// Create the directory
-		err := os.MkdirAll(directoryPath, 0755)
-		if err != nil {
-			log.Fatal("failed to create directory:", err)
-		}
-		log.Printf("Directory created: %s\n", directoryPath)
-	} else if err != nil {
-		log.Fatal("failed to check directory existence:", err)
-	}
-
-	return nil
-}
-
 // RemoveFileIfExists removes a file if it exists.
 func RemoveFileIfExists(filePath string) error {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -73,15 +46,6 @@ func RemoveFileIfExists(filePath string) error {
 		return nil
 	}
 	return os.Remove(filePath)
-}
-
-// RemoveDirectoryIfExists removes a directory if it exists.
-func RemoveDirectoryIfExists(directoryPath string) error {
-	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
-		// Directory does not exist, return nil
-		return nil
-	}
-	return os.RemoveAll(directoryPath)
 }
 
 // WriteBytes writes bytes to a file.
@@ -133,7 +97,102 @@ func ReadString(filepath string) (string, error) {
 	return string(bytes), nil
 }
 
-// ReadFromFile reads content from a file and returns it as a string.
+// Deprecated: ReadFromFile is deprecated. Use ReadString instead.
 func ReadFromFile(filepath string) (string, error) {
 	return ReadString(filepath)
+}
+
+func AppendTo(filename, text string) error {
+
+	// Open the file in append mode. If the file doesn't exist, create it.
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening or creating file:", err)
+		return err
+	}
+	defer file.Close()
+
+	// Write the text and a newline to the file.
+	_, err = fmt.Fprintln(file, text)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+		return err
+	}
+
+	return nil
+}
+
+// RemoveFrom removes text from the file
+func RemoveFrom(filename, text string) error {
+	// Read the file
+	contentBytes, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	// Convert to string and replace the text
+	content := string(contentBytes)
+	content = strings.Replace(content, text, "", -1)
+
+	// Write the modified content back to the file
+	err = os.WriteFile(filename, []byte(content), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Touch creates a file if it doesn't exist, or updates the modified time if it does.
+func Touch(filename string) error {
+
+	// Open the file in append mode. If the file doesn't exist, create it.
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening or creating file:", err)
+		return err
+	}
+	file.Close()
+	return nil
+}
+
+// CatFile prints the content of the file to stdout
+func CatFile(copyFilename string) {
+	content, err := os.ReadFile(copyFilename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(content))
+}
+
+// CopyFile copies a file from src to dst
+func CopyFile(src, dst string) (err error) {
+	// Open source file for reading
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	// Create destination file
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	// Copy the contents of the source file to the destination file
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	// Sync to ensure all changes have been written to disk
+	err = dstFile.Sync()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
