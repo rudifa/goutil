@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/rudifa/goutil/util"
 )
 
 // Stacktrace represents a stacktrace and transform methods
@@ -15,17 +17,37 @@ type Stacktrace struct {
 	RawLines []string
 }
 
-// NewStacktrace returns a new instance of Stacktrace
+// CapturedStacktrace returns a new instance of Stacktrace
 // initialized from runtime.Stack() at the point where it was called
-func NewStacktrace() *Stacktrace {
+func CapturedStacktrace() *Stacktrace {
 	buf := make([]byte, 4096)
 	runtime.Stack(buf, false)
-	return &Stacktrace{RawLines: strings.Split(string(buf), "\n")}
+	return NewStacktraceFrom(string(buf))
+}
+
+// NewStacktrace returns a new instance of Stacktrace
+// initialized from a string logged using runtime.Stack()
+func NewStacktraceFrom(rawString string) *Stacktrace {
+	rawLines := strings.Split(rawString, "\n")
+	util.ReverseSlice(rawLines)
+	return &Stacktrace{rawLines}
 }
 
 // OnelineString returns a one-line string representation of the stacktrace
 func (st Stacktrace) OnelineString() string {
 	return OnelineString(st.RawLines)
+}
+
+// OnelineString returns a one-line string representation of the stacktrace
+func OnelineString(rawLines []string) string {
+	funcSigs := []string{}
+	for _, line := range rawLines {
+		funcSig := ExtractFuncSignature(line)
+		if funcSig != "" {
+			funcSigs = append(funcSigs, funcSig)
+		}
+	}
+	return strings.Join(funcSigs, " => ")
 }
 
 // ExtractFuncSignature extracts the function signature from a stack line
@@ -39,16 +61,4 @@ func ExtractFuncSignature(line string) string {
 		return matches[1]
 	}
 	return ""
-}
-
-// OnelineString returns a one-line string representation of the stacktrace
-func OnelineString(rawLines []string) string {
-	funcSigs := []string{}
-	for _, line := range rawLines {
-		funcSig := ExtractFuncSignature(line)
-		if funcSig != "" {
-			funcSigs = append(funcSigs, funcSig)
-		}
-	}
-	return strings.Join(funcSigs, " => ")
 }

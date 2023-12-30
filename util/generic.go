@@ -22,3 +22,24 @@ func Map[T, U any](data []T, f func(T) U) []U {
 
 	return res
 }
+
+// AreEqual returns true if the slices are equal
+func AreEqual[T comparable](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// ReverseSlice reverses a slice of T
+func ReverseSlice[T any](s []T) {
+	for i := len(s)/2 - 1; i >= 0; i-- {
+		opp := len(s) - 1 - i
+		s[i], s[opp] = s[opp], s[i]
+	}
+}

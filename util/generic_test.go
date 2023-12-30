@@ -25,3 +25,29 @@ func TestMap(t *testing.T) {
 		return i * i
 	}))
 }
+
+func TestAreEqual(t *testing.T) {
+
+	assert.True(t, AreEqual([]int{1, 2, 3}, []int{1, 2, 3}))
+	assert.False(t, AreEqual([]int{1, 2, 3}, []int{1, 2, 3, 4}))
+	assert.True(t, AreEqual([]string{"a", "b", "c"}, []string{"a", "b", "c"}))
+	assert.False(t, AreEqual([]string{"a", "b", "c"}, []string{"a", "b", "c", "d"}))
+	assert.False(t, AreEqual([]string{"a", "b", "c"}, []string{"a", "b", "d"}))
+}
+
+func TestReverseSlice(t *testing.T) {
+
+	s := []string{"a", "b", "c"}
+	ReverseSlice(s)
+	assert.Equal(t, []string{"c", "b", "a"}, s)
+
+	s = []string{"a", "b", "c", "d"}
+	ReverseSlice(s)
+	assert.Equal(t, []string{"d", "c", "b", "a"}, s)
+
+	// ints
+	i := []int{1, 2, 3}
+	ReverseSlice(i)
+	assert.Equal(t, []int{3, 2, 1}, i)
+
+}
