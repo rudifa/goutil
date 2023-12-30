@@ -22,3 +22,16 @@ func Map[T, U any](data []T, f func(T) U) []U {
 
 	return res
 }
+
+// AreEqual returns true if the slices are equal
+func AreEqual[T comparable](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
+}
