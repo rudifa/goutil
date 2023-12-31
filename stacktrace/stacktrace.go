@@ -25,8 +25,8 @@ func CapturedStacktrace() *Stacktrace {
 	return NewStacktraceFrom(string(buf))
 }
 
-// NewStacktrace returns a new instance of Stacktrace
-// initialized from a string logged using runtime.Stack()
+// NewStacktraceFrom returns a new instance of Stacktrace
+// initialized from a string obtained from runtime.Stack()
 func NewStacktraceFrom(rawString string) *Stacktrace {
 	rawLines := strings.Split(rawString, "\n")
 	util.ReverseSlice(rawLines)

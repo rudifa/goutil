@@ -97,11 +97,13 @@ func ReadString(filepath string) (string, error) {
 	return string(bytes), nil
 }
 
-// Deprecated: ReadFromFile is deprecated. Use ReadString instead.
+// ReadFromFile returns the content of the file as a string.
+// Deprecated, use ReadString instead.
 func ReadFromFile(filepath string) (string, error) {
 	return ReadString(filepath)
 }
 
+// AppendTo appends text to the file
 func AppendTo(filename, text string) error {
 
 	// Open the file in append mode. If the file doesn't exist, create it.
