@@ -12,8 +12,25 @@ import (
 	"github.com/rudifa/goutil/util"
 )
 
-// TODO describe usage with examples
-// TODO separate tests into wb_test and bb_test
+/* Usage example:
+
+func LogStackOneline() {
+	// create a stacktrace instance (capturing the stack at this point)
+	st := stacktrace.CapturedStacktrace()
+
+	// get the stacktrace as a one-line string with function `Callpoints`, similar to this:
+	// "main main.go:26 => runParseAndFormat_2567 main.go:37 => runParseAndFormat main.go:104 => writeString printer.go:365 => append printer.go:454 => LogStackTrace printer.go:506"
+
+	callpoints := st.StacklineCallpoints()
+	log.Printf("StacklineCallpoints: %s\n", callpoints)
+
+	// and/or get the stacktrace as a one-line string with `Callersigs`, similar to this:
+	// "main.main => main.runParseAndFormat_2567 => main.runParseAndFormat => format.(*printer).writeString => format.(*printer).append => format.LogStackTrace"
+
+	callersigs := st.StacklineCallersigs()
+	log.Printf("StacklineCallersigs: %s", callersigs)
+}
+*/
 
 // stacktrace api ----------------------------------------------------------------------------------
 
