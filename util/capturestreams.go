@@ -35,6 +35,10 @@ type CaptureStdio struct {
 	stdinWriter  *os.File
 }
 
+// New creates a new CaptureStdio. Between creating a new CaptureStdio and
+// calling ReadAndRestore on it, code reading os.Stdin will get the contents
+// of stdinText passed to New. Output to os.Stdout will be captured
+// and returned from ReadAndRestore.
 func New(stdinText string) (*CaptureStdio, error) {
 	// Pipe for stdin.
 	//

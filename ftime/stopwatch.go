@@ -1,4 +1,4 @@
-// Package: ftime provides tools for time related operations.
+// Package ftime stopwatch.go provides tools for execution time measurement.
 package ftime
 
 import (

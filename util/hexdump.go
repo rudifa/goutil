@@ -2,6 +2,7 @@ package util
 
 import "fmt"
 
+// HexDump returns a hexdump of the given data
 func HexDump(data []byte) string {
 	var result string
 	for i := 0; i < len(data); i += 16 {

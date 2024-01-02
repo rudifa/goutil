@@ -1,4 +1,4 @@
-// Package: util, File: generic.go contains generic utilities
+// Package util generic.go contains generic utilities
 package util
 
 // Contains returns true if the slice contains the value

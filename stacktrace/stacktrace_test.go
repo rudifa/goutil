@@ -4,7 +4,7 @@ Copyright © 2023 Rudolf Farkas @rudifa rudi.farkas@gmail.com
 package stacktrace_test
 
 import (
-	"fmt"
+	"log"
 	"strings"
 	"testing"
 
@@ -13,11 +13,14 @@ import (
 
 func TestStacktrace(t *testing.T) {
 
+	log.SetFlags(log.Lshortfile)
+
+	// capture stacktrace from runtime.Stack()
 	st := stacktrace.CapturedStacktrace()
 
-	fmt.Printf("stacktrace:\n")
-	for _, line := range st.RawLines {
-		fmt.Printf("  %s\n", line)
+	log.Printf("stacktrace PairedRawLines:\n")
+	for _, line := range st.PairedRawLines {
+		log.Printf("  %s\n", line)
 	}
 }
 
@@ -32,9 +35,7 @@ const (
 	/Users/rudifarkas/GitHub/golang/src/cue/cue/format/format.go:257`
 )
 
-func TestExtractFuncSignature(t *testing.T) {
-
-	const sampleStackTrace = `cuelang.org/go/cue/format.LogStackTrace()
+const sampleStackTrace = `cuelang.org/go/cue/format.LogStackTrace()
 	/Users/rudifarkas/GitHub/golang/src/cue/cue/format/printer.go:506 +0x3a
 cuelang.org/go/cue/format.(*printer).append(0xc00031b2c0, {0x17c374c, 0x6}, {0xc0002dee40?, 0x1, 0x11a2d25?})
 	/Users/rudifarkas/GitHub/golang/src/cue/cue/format/printer.go:454 +0x4aa
@@ -47,42 +48,14 @@ main.runParseAndFormat_2567()
 main.main()
 	/Users/rudifarkas/GitHub/golang/src/cue-issues-fmt-comments/main.go:26 +0x58`
 
-	extractedFromSampleStackTrace := `format.LogStackTrace
+const sampleStackTracePairsJoined = `cuelang.org/go/cue/format.LogStackTrace() /Users/rudifarkas/GitHub/golang/src/cue/cue/format/printer.go:506 +0x3a
+cuelang.org/go/cue/format.(*printer).append(0xc00031b2c0, {0x17c374c, 0x6}, {0xc0002dee40?, 0x1, 0x11a2d25?}) /Users/rudifarkas/GitHub/golang/src/cue/cue/format/printer.go:454 +0x4aa
+cuelang.org/go/cue/format.(*printer).writeString(0xc00031b2c0, {0x18ce528, 0x1}, 0x0) /Users/rudifarkas/GitHub/golang/src/cue/cue/format/printer.go:365 +0xc7
+main.runParseAndFormat({0x1bd7719, 0x13}, 0x0) /Users/rudifarkas/GitHub/golang/src/cue-issues-fmt-comments/main.go:104 +0x4f2
+main.runParseAndFormat_2567() /Users/rudifarkas/GitHub/golang/src/cue-issues-fmt-comments/main.go:37 +0x25
+main.main() /Users/rudifarkas/GitHub/golang/src/cue-issues-fmt-comments/main.go:26 +0x58
 
-format.(*printer).append
-
-format.(*printer).writeString
-
-main.runParseAndFormat
-
-main.runParseAndFormat_2567
-
-main.main
 `
-
-	lines := strings.Split(sampleStackTrace, "\n")
-
-	wantedSigs := strings.Split(extractedFromSampleStackTrace, "\n")
-
-	for i, line := range lines {
-		got := stacktrace.ExtractFuncSignature(line)
-		wanted := wantedSigs[i]
-
-		if got != wanted {
-			t.Errorf("%d wanted |%s|, got |%s|", i, wanted, got)
-		}
-	}
-
-	oneline := stacktrace.OnelineString(lines)
-
-	wantedSigsString := strings.ReplaceAll(extractedFromSampleStackTrace, "\n\n", " => ")
-	wantedSigsString = strings.ReplaceAll(wantedSigsString, "\n", "") // remove trailing newline
-
-	if oneline != wantedSigsString {
-		t.Errorf("wanted |%s|, got |%s|", wantedSigsString, oneline)
-	}
-}
-
 const longerStackTrace = `printer.go:504: Stack trace:
 goroutine 1 [running]:
 cuelang.org/go/cue/format.LogStackTrace()
@@ -134,12 +107,135 @@ main.runParseAndFormat_2274(...)
 main.main()
 	/Users/rudifarkas/GitHub/golang/src/cue-issues-fmt-comments/main.go:28 +0x69`
 
-func TestNewStacktrace(t *testing.T) {
+// stacktrace api tests ----------------------------------------------------------------------------
+
+func TestNewStacktraceFrom(t *testing.T) {
 	st := stacktrace.NewStacktraceFrom(longerStackTrace)
-	oneline := st.OnelineString()
+	got := st.StacklineCallersigs()
 	// fmt.Printf("oneline: %s\n", oneline)
-	wanted := `main.main => main.runParseAndFormat_2274 => main.runParseAndFormat => format.Node => format.(*config).fprint => format.printNode => format.(*formatter).file => format.(*formatter).walkDeclList => format.(*formatter).decl => format.(*formatter).expr => format.(*formatter).expr1 => format.(*formatter).exprRaw => format.(*formatter).walkListElems => format.(*formatter).exprRaw => format.(*formatter).selectorExpr => format.(*formatter).expr => format.(*formatter).expr1 => format.(*formatter).after => format.(*formatter).visitComments => format.(*formatter).printComment => format.(*printer).Print => format.(*printer).writeString => format.(*printer).append => format.LogStackTrace`
-	if oneline != wanted {
-		t.Errorf("wanted |%s|, got |%s|", wanted, oneline)
+	want := `main.main => main.runParseAndFormat_2274 => main.runParseAndFormat => format.Node => format.(*config).fprint => format.printNode => format.(*formatter).file => format.(*formatter).walkDeclList => format.(*formatter).decl => format.(*formatter).expr => format.(*formatter).expr1 => format.(*formatter).exprRaw => format.(*formatter).walkListElems => format.(*formatter).exprRaw => format.(*formatter).selectorExpr => format.(*formatter).expr => format.(*formatter).expr1 => format.(*formatter).after => format.(*formatter).visitComments => format.(*formatter).printComment => format.(*printer).Print => format.(*printer).writeString => format.(*printer).append => format.LogStackTrace`
+	if want != got {
+		t.Errorf("want |%s|\ngot |%s|\n", want, got)
 	}
+	log.Printf("StacklineCallersigs returns %s\n", got)
+}
+
+func TestStacklineCallersigs(t *testing.T) {
+
+	lines := strings.Split(sampleStackTrace, "\n")
+
+	// TODO should be reversed
+
+	got := stacktrace.StacklineCallersigs(lines)
+
+	want := `main.main => main.runParseAndFormat_2567 => main.runParseAndFormat => format.(*printer).writeString => format.(*printer).append => format.LogStackTrace`
+
+	if want != got {
+		t.Errorf("want |%s|, got |%s|", want, got)
+	}
+	log.Printf("StacklineCallersigs returns %s\n", got)
+
+}
+
+func TestStacklineCallpoints(t *testing.T) {
+
+	wantCallsFromSampleStackTrace := `main main.go:26 => runParseAndFormat_2567 main.go:37 => runParseAndFormat main.go:104 => writeString printer.go:365 => append printer.go:454 => LogStackTrace printer.go:506`
+
+	lines := strings.Split(sampleStackTracePairsJoined, "\n")
+	got := stacktrace.StacklineCallpoints(lines)
+
+	if wantCallsFromSampleStackTrace != got {
+		t.Errorf("want |%s|, got |%s|", wantCallsFromSampleStackTrace, got)
+	}
+	log.Printf("StacklineCallpoints returns %s\n", got)
+
+}
+
+// stacktrace utilities tests -----------------------------------------------------------------------
+
+func TestJoinLinePairs(t *testing.T) {
+	gotJoinedPairs := stacktrace.JoinLinePairs(sampleStackTrace)
+
+	for _, line := range strings.Split(gotJoinedPairs, "\n") {
+		log.Printf("line:|%v|\n", line)
+	}
+
+	for i, got := range strings.Split(gotJoinedPairs, "\n") {
+		want := strings.Split(sampleStackTracePairsJoined, "\n")[i]
+		if want != got {
+			t.Errorf("%d want |%s|, got |%s|", i, want, got)
+		}
+		log.Printf("JoinLinePairs returns %s\n", got)
+	}
+}
+
+func TestExtractFuncSignature(t *testing.T) {
+
+	wantSignaturesFromSampleStackTrace := `format.LogStackTrace
+
+format.(*printer).append
+
+format.(*printer).writeString
+
+main.runParseAndFormat
+
+main.runParseAndFormat_2567
+
+main.main
+`
+
+	lines := strings.Split(sampleStackTrace, "\n")
+
+	wantSignatures := strings.Split(wantSignaturesFromSampleStackTrace, "\n")
+
+	for i, line := range lines {
+		got := stacktrace.ExtractFuncSignature(line)
+		want := wantSignatures[i]
+
+		if want != got {
+			t.Errorf("%d want |%s|, got |%s|", i, want, got)
+		}
+		log.Printf("ExtractFuncSignature returns %s\n", got)
+	}
+}
+
+func TestExtractCallsite(t *testing.T) {
+
+	wantCallsitesFromSampleStackTrace := `
+printer.go:506
+
+printer.go:454
+
+printer.go:365
+
+main.go:104
+
+main.go:37
+
+main.go:26`
+
+	lines := strings.Split(sampleStackTrace, "\n")
+
+	log.Printf("wantCallsitesFromSampleStackTrace:\n%s\n", wantCallsitesFromSampleStackTrace)
+
+	wantCallsites := strings.Split(wantCallsitesFromSampleStackTrace, "\n")
+
+	for i, line := range lines {
+		got := stacktrace.ExtractCallsite(line)
+		want := wantCallsites[i]
+
+		if want != got {
+			t.Errorf("%d want |%s|, got |%s|", i, want, got)
+		}
+		log.Printf("ExtractCallsite returns %s\n", got)
+	}
+}
+
+func TestExtractCallpoint(t *testing.T) {
+	got := stacktrace.ExtractCallpoint(sampleStackTrace2)
+	want := "LogStackTrace printer.go:506"
+	if want != got {
+		t.Errorf("want |%s|, got |%s|", want, got)
+	}
+	log.Printf("ExtractCallpoint returns %s\n", got)
 }
