@@ -43,9 +43,13 @@ type Stacktrace struct {
 // CapturedStacktrace returns a new instance of Stacktrace
 // initialized from runtime.Stack() at the point where it was called
 func CapturedStacktrace() *Stacktrace {
-	buf := make([]byte, 4096)
-	runtime.Stack(buf, false)
-	return NewStacktraceFrom(string(buf))
+	buf := make([]byte, 65536)
+	n := runtime.Stack(buf, false)
+	if n >= len(buf) {
+		// The buffer is full, and some data might have been lost.
+		panic("stacktrace.CapturedStacktrace: stacktrace buffer is full")
+	}
+	return NewStacktraceFrom(string(buf[:n])) // Only convert the part of the buffer that was written to.
 }
 
 // NewStacktraceFrom returns a new instance of Stacktrace
