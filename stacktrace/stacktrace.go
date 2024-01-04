@@ -5,6 +5,7 @@ Copyright © 2023 Rudolf Farkas @rudifa rudi.farkas@gmail.com
 package stacktrace
 
 import (
+	"fmt"
 	"regexp"
 	"runtime"
 	"strings"
@@ -37,6 +38,7 @@ func LogStackOneline() {
 // Stacktrace represents a stacktrace and has transform methods
 type Stacktrace struct {
 	// each pair of raw lines from runtime.Stack() describing a call is joined into a single line
+	// the pairs are in the original order, i.e. the tip is at index 0
 	PairedRawLines []string
 }
 
@@ -57,6 +59,23 @@ func CapturedStacktrace() *Stacktrace {
 func NewStacktraceFrom(rawString string) *Stacktrace {
 	pairedLines := strings.Split(JoinLinePairs(rawString), "\n")
 	return &Stacktrace{pairedLines}
+}
+
+// Trim removes atRoot lines from the root of the stacktrace and
+// atTip lines from the tip of the stacktrace
+func (st *Stacktrace) Trim(atRoot, atTip int) error {
+	// Protect against invalid indices
+	if atRoot < 0 || atTip < 0 || atRoot+atTip > len(st.PairedRawLines) {
+		return fmt.Errorf("stacktrace.Trim: invalid indices: atRoot=%d, atTip=%d, len(st.PairedRawLines)=%d", atRoot, atTip, len(st.PairedRawLines))
+	}
+
+	// Remove atTip lines from the tip of the stacktrace
+	st.PairedRawLines = st.PairedRawLines[atTip:]
+
+	// Remove atRoot lines from the root of the stacktrace
+	st.PairedRawLines = st.PairedRawLines[:len(st.PairedRawLines)-atRoot]
+
+	return nil
 }
 
 // StacklineCallersigs returns a one-line string representation of the stacktrace
