@@ -15,3 +15,13 @@ go get -u github.com/rudifa/goutil
 ```go
 import "github.com/rudifa/goutil"
 ```
+
+## Packages
+
+### stacktrace
+
+## TODO
+
+### util
+
+> remove HexDump, use `hex.Dump` from the stdlib instead.

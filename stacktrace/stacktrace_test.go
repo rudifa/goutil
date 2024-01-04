@@ -11,6 +11,8 @@ import (
 	"github.com/rudifa/goutil/stacktrace"
 )
 
+const verbose = false
+
 func TestStacktrace(t *testing.T) {
 
 	log.SetFlags(log.Lshortfile)
@@ -18,9 +20,11 @@ func TestStacktrace(t *testing.T) {
 	// capture stacktrace from runtime.Stack()
 	st := stacktrace.CapturedStacktrace()
 
-	log.Printf("stacktrace PairedRawLines:\n")
-	for _, line := range st.PairedRawLines {
-		log.Printf("  %s\n", line)
+	if verbose {
+		log.Printf("stacktrace PairedRawLines:\n")
+		for _, line := range st.PairedRawLines {
+			log.Printf("  %s\n", line)
+		}
 	}
 }
 
@@ -112,29 +116,90 @@ main.main()
 func TestNewStacktraceFrom(t *testing.T) {
 	st := stacktrace.NewStacktraceFrom(longerStackTrace)
 	got := st.StacklineCallersigs()
-	// fmt.Printf("oneline: %s\n", oneline)
 	want := `main.main => main.runParseAndFormat_2274 => main.runParseAndFormat => format.Node => format.(*config).fprint => format.printNode => format.(*formatter).file => format.(*formatter).walkDeclList => format.(*formatter).decl => format.(*formatter).expr => format.(*formatter).expr1 => format.(*formatter).exprRaw => format.(*formatter).walkListElems => format.(*formatter).exprRaw => format.(*formatter).selectorExpr => format.(*formatter).expr => format.(*formatter).expr1 => format.(*formatter).after => format.(*formatter).visitComments => format.(*formatter).printComment => format.(*printer).Print => format.(*printer).writeString => format.(*printer).append => format.LogStackTrace`
 	if want != got {
 		t.Errorf("want |%s|\ngot |%s|\n", want, got)
 	}
-	log.Printf("StacklineCallersigs returns %s\n", got)
+	if verbose {
+		log.Printf("StacklineCallersigs returns %s\n", got)
+	}
+}
+
+func TestTrim(t *testing.T) {
+	st := stacktrace.NewStacktraceFrom(sampleStackTrace)
+	{
+		got := st.StacklineCallersigs()
+		want := `main.main => main.runParseAndFormat_2567 => main.runParseAndFormat => format.(*printer).writeString => format.(*printer).append => format.LogStackTrace`
+		if want != got {
+			t.Errorf("want |%s|, got |%s|", want, got)
+		}
+		if verbose {
+			log.Printf("StacklineCallersigs returns %s\n", got)
+		}
+	}
+	{
+		err := st.Trim(2, 2)
+		if err != nil {
+			t.Errorf("Trim returned error: %v", err)
+		}
+		got := st.StacklineCallersigs()
+		want := `main.runParseAndFormat => format.(*printer).writeString`
+		if want != got {
+			t.Errorf("want |%s|, got |%s|", want, got)
+		}
+		if verbose {
+			log.Printf("StacklineCallersigs returns %s\n", got)
+		}
+	}
+	{
+		err := st.Trim(3, 1)
+		if err != nil {
+			const expectedError = "stacktrace.Trim: invalid indices: atRoot=3, atTip=1, len(st.PairedRawLines)=2"
+			if err.Error() != expectedError {
+				t.Errorf("expected error message '%s', got '%s'", expectedError, err.Error())
+			}
+		} else {
+			t.Error("expected an error, got nil")
+		}
+		// expect unchanged from previous test
+		got := st.StacklineCallersigs()
+		want := `main.runParseAndFormat => format.(*printer).writeString`
+		if want != got {
+			t.Errorf("want |%s|, got |%s|", want, got)
+		}
+		if verbose {
+			log.Printf("StacklineCallersigs returns %s\n", got)
+		}
+	}
+	{
+		err := st.Trim(1, 1)
+		if err != nil {
+			t.Errorf("Trim returned error: %v", err)
+		}
+		got := st.StacklineCallersigs()
+		want := ``
+		if want != got {
+			t.Errorf("want |%s|, got |%s|", want, got)
+		}
+		if verbose {
+			log.Printf("StacklineCallersigs returns %s\n", got)
+		}
+	}
 }
 
 func TestStacklineCallersigs(t *testing.T) {
 
 	lines := strings.Split(sampleStackTrace, "\n")
-
-	// TODO should be reversed
-
 	got := stacktrace.StacklineCallersigs(lines)
-
 	want := `main.main => main.runParseAndFormat_2567 => main.runParseAndFormat => format.(*printer).writeString => format.(*printer).append => format.LogStackTrace`
 
 	if want != got {
 		t.Errorf("want |%s|, got |%s|", want, got)
 	}
-	log.Printf("StacklineCallersigs returns %s\n", got)
+	if verbose {
+		log.Printf("StacklineCallersigs returns %s\n", got)
 
+	}
 }
 
 func TestStacklineCallpoints(t *testing.T) {
@@ -147,8 +212,10 @@ func TestStacklineCallpoints(t *testing.T) {
 	if wantCallsFromSampleStackTrace != got {
 		t.Errorf("want |%s|, got |%s|", wantCallsFromSampleStackTrace, got)
 	}
-	log.Printf("StacklineCallpoints returns %s\n", got)
+	if verbose {
+		log.Printf("StacklineCallpoints returns %s\n", got)
 
+	}
 }
 
 // stacktrace utilities tests -----------------------------------------------------------------------
@@ -165,7 +232,9 @@ func TestJoinLinePairs(t *testing.T) {
 		if want != got {
 			t.Errorf("%d want |%s|, got |%s|", i, want, got)
 		}
-		log.Printf("JoinLinePairs returns %s\n", got)
+		if verbose {
+			log.Printf("JoinLinePairs returns %s\n", got)
+		}
 	}
 }
 
@@ -195,7 +264,9 @@ main.main
 		if want != got {
 			t.Errorf("%d want |%s|, got |%s|", i, want, got)
 		}
-		log.Printf("ExtractFuncSignature returns %s\n", got)
+		if verbose {
+			log.Printf("ExtractFuncSignature returns %s\n", got)
+		}
 	}
 }
 
@@ -227,7 +298,9 @@ main.go:26`
 		if want != got {
 			t.Errorf("%d want |%s|, got |%s|", i, want, got)
 		}
-		log.Printf("ExtractCallsite returns %s\n", got)
+		if verbose {
+			log.Printf("ExtractCallsite returns %s\n", got)
+		}
 	}
 }
 
@@ -237,5 +310,6 @@ func TestExtractCallpoint(t *testing.T) {
 	if want != got {
 		t.Errorf("want |%s|, got |%s|", want, got)
 	}
+
 	log.Printf("ExtractCallpoint returns %s\n", got)
 }
