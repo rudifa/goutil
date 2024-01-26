@@ -227,6 +227,21 @@ func TestStacklineCallpoints(t *testing.T) {
 	}
 }
 
+func TestStacklineCallpointsShort(t *testing.T) {
+
+	wantCallsFromSampleStackTrace := `main main.go:26 => runParseAndFormat_2567 :37 => runParseAndFormat :104 => writeString printer.go:365 => append :454 => LogStackTrace :506`
+
+	lines := strings.Split(sampleStackTracePairsJoined, "\n")
+	got := stacktrace.StacklineCallpoints(lines, true)
+
+	if wantCallsFromSampleStackTrace != got {
+		t.Errorf("want |%s|, got |%s|", wantCallsFromSampleStackTrace, got)
+	}
+	if verbose {
+		log.Printf("StacklineCallpoints returns %s\n", got)
+
+	}
+}
 // stacktrace utilities tests -----------------------------------------------------------------------
 
 func TestJoinLinePairs(t *testing.T) {

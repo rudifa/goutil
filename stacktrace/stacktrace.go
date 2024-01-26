@@ -110,13 +110,13 @@ func StacklineCallersigs(rawLines []string) string {
 // with the calling function name and file:line for each call
 // captured at the point of creation of the Stacktrace instance, e.g.
 // "main main.go:26 => runParseAndFormat_2567 main.go:37 => runParseAndFormat main.go:104 => writeString printer.go:365 => append printer.go:454 => LogStackTrace printer.go:506"
-func (st Stacktrace) StacklineCallpoints() string {
-	return StacklineCallpoints(st.PairedRawLines)
+func (st Stacktrace) StacklineCallpoints(short ...bool) string {
+	return StacklineCallpoints(st.PairedRawLines, short...)
 }
 
 // StacklineCallpoints returns an one-line string representation of the stacktrace
 // with the calling function name and file:line for each call
-func StacklineCallpoints(pairedLines []string) string {
+func StacklineCallpoints(pairedLines []string, short ...bool) string {
 	funcCallSigs := []string{}
 	for _, line := range pairedLines {
 		funcSig := ExtractCallpoint(line)
@@ -125,6 +125,9 @@ func StacklineCallpoints(pairedLines []string) string {
 		}
 	}
 	util.ReverseSlice(funcCallSigs)
+	if len(short) > 0 && short[0] {
+		funcCallSigs = shorten(funcCallSigs)
+	}
 	return strings.Join(funcCallSigs, " => ")
 }
 
@@ -205,4 +208,35 @@ func JoinLinePairs(rawString string) string {
 	})
 
 	return result
+}
+
+// shorten returns a slice of strings with the filenames removed from the callpoints
+// when repeated from previous callpoint
+func shorten(sigs []string) []string {
+
+	outsigs := []string{}
+	prevFilename := ""
+
+	for _, sig := range sigs {
+		// Use a regex to extract the filename and the rest into separate strings from sig
+		re := regexp.MustCompile(`(.+)\s(.+):(\d+)`)
+		matches := re.FindStringSubmatch(sig)
+
+		if len(matches) < 4 {
+			// log.Printf("sig does not match the expected format: %s\n", sig)
+			continue
+		}
+
+		funcName, filename, lineNumber := matches[1], matches[2], matches[3]
+
+		// If the filename is the same as prevFilename, append the rest to shortsigs
+		// Else append the full sig to shortsigs and update prevFilename
+		if filename == prevFilename {
+			outsigs = append(outsigs, fmt.Sprintf("%s :%s", funcName, lineNumber))
+		} else {
+			outsigs = append(outsigs, sig)
+			prevFilename = filename
+		}
+	}
+	return outsigs
 }
