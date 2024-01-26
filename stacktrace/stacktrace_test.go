@@ -123,6 +123,16 @@ func TestNewStacktraceFrom(t *testing.T) {
 	if verbose {
 		log.Printf("StacklineCallersigs returns %s\n", got)
 	}
+
+	// also test Len()
+	wantlen := 26
+	gotlen := st.Len()
+	if wantlen != gotlen {
+		t.Errorf("want |%d|, got |%d|", wantlen, gotlen)
+	}
+	if verbose {
+		log.Printf("Len returns %d\n", gotlen)
+	}
 }
 
 func TestTrim(t *testing.T) {
@@ -198,7 +208,6 @@ func TestStacklineCallersigs(t *testing.T) {
 	}
 	if verbose {
 		log.Printf("StacklineCallersigs returns %s\n", got)
-
 	}
 }
 

@@ -78,6 +78,11 @@ func (st *Stacktrace) Trim(atRoot, atTip int) error {
 	return nil
 }
 
+// Len returns the number of calls in the stacktrace
+func (st *Stacktrace) Len() int {
+	return len(st.PairedRawLines)
+}
+
 // StacklineCallersigs returns a one-line string representation of the stacktrace
 // with the function signatures (path (receiver) funcname) for each call
 // captured at the point of creation of the Stacktrace instance, e.g.
