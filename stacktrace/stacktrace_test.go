@@ -242,6 +242,7 @@ func TestStacklineCallpointsShort(t *testing.T) {
 
 	}
 }
+
 // stacktrace utilities tests -----------------------------------------------------------------------
 
 func TestJoinLinePairs(t *testing.T) {
