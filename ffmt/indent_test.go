@@ -49,7 +49,6 @@ func TestIndentNestedBrackets2(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
-
 func TestIndentNestedBrackets3(t *testing.T) {
 
 	// a short example, using `[]` as brackets

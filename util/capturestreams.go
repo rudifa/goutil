@@ -169,16 +169,67 @@ func (sf *CaptureStdio) ReadAndRestore() ([]byte, []byte, error) {
 	return stdout, stderr, nil
 }
 
+// Functions ExecuteFn* are examples of how to use the CaptureStdio, each with a specific function signature
+
 // ExecuteFnAndCaptureStdoutAndStderr runs fn with its args, captures its stdout and stder, and returns them as strings
-func ExecuteFnAndCaptureStdoutAndStderr(fn func(string, ...string) error, cmd string, args ...string) (string, string, error) {
+// This supports only the signature func(...string) error
+func ExecuteFnAndCaptureStdoutAndStderr1(fn func(...string) error, args ...string) (string, string, error) {
 
 	fs, err := New("")
 	if err != nil {
 		return "", "", err
 	}
 
-	// Call the provided function
+	// Call the provided function which should write to stdout and stderr
+	err = fn(args...)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	stdout, stderr, err := fs.ReadAndRestore()
+	if err != nil {
+		return "", "", err
+	}
+
+	return string(stdout), string(stderr), err
+}
+
+// ExecuteFnAndCaptureStdoutAndStderr2 runs fn with its args, captures its stdout and stder, and returns them as strings
+// This supports only the signature func(string, ...string) error
+func ExecuteFnAndCaptureStdoutAndStderr2(fn func(string, ...string) error, cmd string, args ...string) (string, string, error) {
+
+	fs, err := New("")
+	if err != nil {
+		return "", "", err
+	}
+
+	// Call the provided function which should write to stdout and stderr
 	err = fn(cmd, args...)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	stdout, stderr, err := fs.ReadAndRestore()
+	if err != nil {
+		return "", "", err
+	}
+
+	return string(stdout), string(stderr), err
+}
+
+// ExecuteFnAndCaptureStdoutAndStderr3 runs fn with its args, captures its stdout and stder, and returns them as strings
+// This supports only the signature func(...string) error
+func ExecuteFnAndCaptureStdoutAndStderr3(fn func(...string) error, stdin string, args ...string) (string, string, error) {
+
+	fs, err := New(stdin)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Call the provided function which should read from stdin and write to stdout and stderr
+	err = fn(args...)
 
 	if err != nil {
 		return "", "", err
