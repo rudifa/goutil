@@ -4,6 +4,7 @@ package files
 import (
 	"log"
 	"os"
+	"path/filepath"
 )
 
 // DirectoryExists returns true if the directory exists, false if not,
@@ -36,11 +37,81 @@ func EnsureDirectoryExists(directoryPath string) error {
 	return nil
 }
 
-// RemoveDirectoryIfExists removes a directory if it exists.
-func RemoveDirectoryIfExists(directoryPath string) error {
+// RemoveDirectory removes a directory if it exists.
+func RemoveDirectory(directoryPath string) error {
 	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
 		// Directory does not exist, return nil
 		return nil
 	}
 	return os.RemoveAll(directoryPath)
+}
+
+// RemoveDirectoryIfExists removes a directory if it exists.
+// Deprecated: Use RemoveDirectory instead.
+func RemoveDirectoryIfExists(directoryPath string) error {
+	return RemoveDirectory(directoryPath)
+}
+
+// RemoveFilesMatching removes files in the specified directory that match the given extension.
+func RemoveFilesMatching(dir, extension string) error {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if extension == "" || file.Name()[len(file.Name())-len(extension):] == extension {
+			filePath := filepath.Join(dir, file.Name())
+			err := os.Remove(filePath)
+			if err != nil {
+				log.Printf("failed to remove file: %s", filePath)
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// ListFileNames returns a slice of file names in the specified directory
+// that match the given extensions.
+func ListFileNames(dir string, extensions ...string) ([]string, error) {
+	// Open the directory
+	d, err := os.Open(dir)
+	if err != nil {
+		return nil, err
+	}
+	defer d.Close()
+
+	// Read the directory contents
+	files, err := d.Readdirnames(-1)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return all files if no extensions are provided
+	if len(extensions) == 0 {
+		return files, nil
+	}
+
+	// Add a dot to the extensions if it is missing
+	for i, ext := range extensions {
+		if ext[0] != '.' {
+			extensions[i] = "." + ext
+		}
+	}
+
+	// Filter files based on extensions
+	var filteredFiles []string
+	for _, file := range files {
+		for _, ext := range extensions {
+			if filepath.Ext(file) == ext {
+				filteredFiles = append(filteredFiles, file)
+				break
+			}
+		}
+	}
+
+	return filteredFiles, nil
 }
